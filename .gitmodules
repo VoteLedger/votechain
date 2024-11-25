@@ -1,0 +1,3 @@
+[submodule "votechain/lib/forge-std"]
+	path = votechain/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
