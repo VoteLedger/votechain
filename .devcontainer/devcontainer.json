@@ -1,0 +1,21 @@
+{
+  "name": "Rust Development",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "mounts": [
+    {
+      "source": "${localEnv:HOME}/.config/nvim",
+      "target": "/root/.config/nvim",
+      "type": "bind"
+    },
+    {
+      "source": "/Users/lucadibello/Developer/dotfiles/.tmux.conf",
+      "target": "/root/.tmux.conf",
+      "type": "bind"
+    }
+  ],
+  "runArgs": ["--network=host", "--name", "votechain-dev"],
+  "postCreateCommand": "foundryup && cargo --version && echo 'Public key:' && cat /root/.ssh/id_ed25519.pub",
+  "remoteUser": "root"
+}
