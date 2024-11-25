@@ -16,6 +16,6 @@
     }
   ],
   "runArgs": ["--network=host", "--name", "votechain-dev"],
-  "postCreateCommand": "foundryup && cargo --version && echo 'Public key:' && cat /root/.ssh/id_ed25519.pub",
+  "postCreateCommand": "cargo --version && echo 'Public key:' && cat /root/.ssh/id_ed25519.pub",
   "remoteUser": "root"
 }

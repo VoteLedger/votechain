@@ -1,20 +1,23 @@
-FROM rust:alpine
+FROM debian:bookworm-slim
 
-# Install required packages + Neovim from registry
-RUN apk add --no-cache \
-  bash curl tar gzip tmux git openssh zip unzip \
-  build-base gcc g++ cmake gettext gettext-dev \
-  python3 py3-pip nodejs npm \
-  ripgrep fzf lazygit neovim
+# Install required packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  bash curl tar gzip tmux git openssh-client zip unzip \
+  build-essential gcc g++ cmake gettext python3 python3-pip \
+  nodejs npm rustc cargo ripgrep fzf neovim && \
+  rm -rf /var/lib/apt/lists/*
+
+# Install lazygit
+RUN curl -Lo /usr/local/bin/lazygit https://github.com/jesseduffield/lazygit/releases/download/v0.44.1/lazygit_0.44.1_Linux_arm64.tar.gz && \
+  tar -xvzf /usr/local/bin/lazygit -C /usr/local/bin && \
+  chmod +x /usr/local/bin/lazygit
 
 # Set working directory for subsequent operations
 WORKDIR /root
 
-# Set ASH as the default shell
-ENV SHELL=/bin/ash
-
-# Install forgery
-RUN curl -L https://foundry.paradigm.xyz | ash
+# Install + setup Foundry
+RUN curl -L https://foundry.paradigm.xyz | bash && \
+  /root/.foundry/bin/foundryup
 
 # Install tmux plugin manager + plugins + generate SSH keys
 RUN git clone https://github.com/tmux-plugins/tpm .tmux/plugins/tpm && \
