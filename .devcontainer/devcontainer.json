@@ -13,6 +13,11 @@
       "source": "/Users/lucadibello/Developer/dotfiles/.tmux.conf",
       "target": "/root/.tmux.conf",
       "type": "bind"
+    },
+    {
+      "source": "/Users/lucadibello/Developer/dotfiles/.tmux.conf.local",
+      "target": "/root/.tmux.conf.local",
+      "type": "bind"
     }
   ],
   "runArgs": ["--network=host", "--name", "votechain-dev"],
