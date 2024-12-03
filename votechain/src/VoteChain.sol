@@ -149,13 +149,13 @@ foundryup
 
 2) Build the file "VoteChain.sol"
 
-forge test
+forge builf
 
 (This command builds all the '.sol' files defined in the "src" folder)
 
 3) Test the functions
 
-Forge test
+forge test
 
 (This command test all the '.t.sol' defined in the "test" folder)
 
