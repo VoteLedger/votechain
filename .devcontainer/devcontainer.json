@@ -20,8 +20,7 @@
       "type": "bind"
     }
   ],
-  "runArgs": ["--network=host", "--name", "votechain-dev"],
-  "forwardPorts": [8545],
+  "runArgs": ["--name", "votechain-dev", "-p", "8545:8545"],
   "postCreateCommand": "cargo --version && echo 'Public key:' && cat /root/.ssh/id_ed25519.pub",
   "remoteUser": "root"
 }
