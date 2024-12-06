@@ -12,6 +12,16 @@ RUN curl -Lo /usr/local/bin/lazygit https://github.com/jesseduffield/lazygit/rel
   tar -xvzf /usr/local/bin/lazygit -C /usr/local/bin && \
   chmod +x /usr/local/bin/lazygit
 
+WORKDIR /tmp
+
+# Clone neovim repository
+RUN git clone https://github.com/neovim/neovim.git
+
+WORKDIR /tmp/neovim
+
+RUN make CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX=/root/neovim/neovim" && make install
+ENV PATH="/root/neovim/bin:${PATH}"
+
 # Set working directory for subsequent operations
 WORKDIR /root
 
