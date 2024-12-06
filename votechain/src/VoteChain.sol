@@ -149,7 +149,7 @@ foundryup
 
 2) Build the file "VoteChain.sol"
 
-forge builf
+forge build
 
 (This command builds all the '.sol' files defined in the "src" folder)
 
