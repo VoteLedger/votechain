@@ -20,7 +20,8 @@ contract votechain {
 
     event poll_created(uint indexed poll_id, string name, string description);
     event vote_cast(uint indexed poll_id, address voter, string option);
-    event poll_ended(uint indexed poll_id, string winner);
+    event poll_ended(uint indexed poll_id, string reason);
+    event poll_finalized(uint indexed poll_id, string winner);
     event vote_receipt_sent(address indexed voter, uint indexed poll_id, string receipt);
 
     modifier only_owner() {
@@ -60,6 +61,17 @@ contract votechain {
         poll_count++;
     }
 
+    // Check and update poll state based on current time
+    function end_poll(uint poll_id) public poll_exists(poll_id) {
+        poll storage poll_instance = polls[poll_id];
+        require(block.timestamp > poll_instance.end_time, "Poll is still active");
+        require(!poll_instance.is_ended, "Poll is already marked as ended");
+
+        poll_instance.is_ended = true;
+
+        emit poll_ended(poll_id, "Poll has ended due to time expiration");
+    }
+
     // Users can cast their vote once for one of the valid options
     function cast_vote(uint poll_id, string memory option) public poll_exists(poll_id) {
         poll storage poll_instance = polls[poll_id];
@@ -89,11 +101,12 @@ contract votechain {
         return polls[poll_id].votes[option];
     }
 
-    // Anyone can end the poll after the end_time has passed
-    function end_poll(uint poll_id) public poll_exists(poll_id) {
+
+    // Finalize the poll: calculate the winner and emit the finalization event
+    function finalize_poll(uint poll_id) public poll_exists(poll_id) {
         poll storage poll_instance = polls[poll_id];
-        require(block.timestamp > poll_instance.end_time, "Poll is still active");
-        require(!poll_instance.is_ended, "Poll has already ended");
+        require(poll_instance.is_ended, "Poll must be ended before finalization");
+        require(bytes(poll_instance.winner).length == 0, "Poll has already been finalized");
 
         uint max_votes = 0;
         bool tie = false;
@@ -106,32 +119,27 @@ contract votechain {
             if (option_votes > max_votes) {
                 max_votes = option_votes;
                 winning_option = option;
-                tie = false; 
+                tie = false;
             } else if (option_votes == max_votes && max_votes != 0) {
-                // A tie for top votes
                 tie = true;
             }
         }
 
-        // If no votes at all, consider it a tie
-        if (max_votes == 0) {
-            tie = true;
-        }
-
-        if (tie) {
+        // If no votes or tie, set winner to "TIE"
+        if (max_votes == 0 || tie) {
             poll_instance.winner = "TIE";
         } else {
             poll_instance.winner = winning_option;
         }
 
-        poll_instance.is_ended = true;
-        emit poll_ended(poll_id, poll_instance.winner);
+        emit poll_finalized(poll_id, poll_instance.winner);
     }
 
-    // View the winner (if ended)
+
+    // View the winner (if finalized)
     function get_winner(uint poll_id) public view poll_exists(poll_id) returns (string memory) {
         poll storage poll_instance = polls[poll_id];
-        require(poll_instance.is_ended, "Poll has not ended yet");
+        require(bytes(poll_instance.winner).length != 0, "Poll has not been finalized yet");
         return poll_instance.winner;
     }
 }
