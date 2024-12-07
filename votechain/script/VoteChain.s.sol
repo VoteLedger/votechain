@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {Script, console} from "forge-std/Script.sol";
-import {vote_chain} from "../src/VoteChain.sol";
+import {votechain} from "../src/VoteChain.sol";
 
 // Test some functionalities directly in the blockchain
 contract deploy_vote_chain is Script {
@@ -10,7 +10,7 @@ contract deploy_vote_chain is Script {
         vm.startBroadcast();
 
         // 1. Contract deployment
-        vote_chain vote_chain_instance = new vote_chain();
+        votechain vote_chain_instance = new votechain();
         console.log("vote_chain deployed at:", address(vote_chain_instance));
 
         // 2. Create a poll
