@@ -16,7 +16,7 @@ anvil:
 # Build the contracts
 build:
 	@echo "Building contracts..."
-	@forge build --root votechain/
+	@forge build --root votechain/ 
 
 # Run test suite
 test:

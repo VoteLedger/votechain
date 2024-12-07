@@ -15,7 +15,7 @@ contract vote_chain_test is Test {
     // Test case for creating a new poll
     function test_create_poll() public {
         // Declare and initialize the options array. For simplicity, we'll consider 2 options
-        string; // Create an array in memory with 2 elements
+        string[] memory options = new string[](2);
         options[0] = "Option A";
         options[1] = "Option B";
 
@@ -36,7 +36,7 @@ contract vote_chain_test is Test {
 
     // Test case for casting a vote in a poll
     function test_vote() public {
-        string;
+        string[] memory options = new string[](2);
         options[0] = "Option A";
         options[1] = "Option B";
 
@@ -58,7 +58,7 @@ contract vote_chain_test is Test {
 
     // Test for the vote_receipt_sent event
     function test_vote_receipt_sent() public {
-        string;
+        string[] memory options = new string[](2);
         options[0] = "Option A";
         options[1] = "Option B";
 

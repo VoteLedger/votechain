@@ -14,7 +14,8 @@ contract deploy_vote_chain is Script {
         console.log("vote_chain deployed at:", address(vote_chain_instance));
 
         // 2. Create a poll
-        string;
+        // ** Declare and initialize the options array properly **
+        string[] memory options = new string[](3);
         options[0] = "Option A";
         options[1] = "Option B";
         options[2] = "Option C";
@@ -24,14 +25,17 @@ contract deploy_vote_chain is Script {
         uint end_time = block.timestamp + 10 minutes; // Voting ends in 10 minutes
         console.log("Current block.timestamp:", block.timestamp);
         console.log("End time:", end_time);
+        
+        // Pass the options array to create_poll
         vote_chain_instance.create_poll("Test Poll", "A test poll for winner calculation", options, start_time, end_time);
         console.log("Poll created with ID:", uint256(0));
 
         // 3. Vote simulations
         console.log("Current block.timestamp:", block.timestamp);
         address user_address = msg.sender;
-        vote_chain_instance.cast_vote(0, "Option A"); // first, ok
+        vote_chain_instance.cast_vote(0, "Option A"); // First, OK
         console.log("%s has successfully voted for Poll ID %s", user_address, uint256(0));
+        
         try vote_chain_instance.cast_vote(0, "Option B") {
             // The same user tries to vote a second time
             console.log("%s has successfully voted for Poll ID %s", user_address, uint256(0));
@@ -40,7 +44,7 @@ contract deploy_vote_chain is Script {
         }
 
         // 4. End poll simulation
-        vm.warp(block.timestamp + 11 minutes); // Move forward in time just a little after the poll ends (not 11 minutes)
+        vm.warp(block.timestamp + 11 minutes); // Move forward in time just a little after the poll ends
         console.log("Current block.timestamp:", block.timestamp);
 
         // Ensure that the poll can be ended (check if the poll's end time has passed)
