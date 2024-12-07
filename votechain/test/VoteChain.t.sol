@@ -137,12 +137,13 @@ contract vote_chain_test is Test {
             "This poll is already expired",
             options,
             block.timestamp,
-            block.timestamp
+            block.timestamp + 1 // NOTE: Needed as create_poll ensures that start_time < end_time
         );
 
-        // Move time forward by 1 second to exceed end_time
-        vm.warp(block.timestamp + 1);
+        // Move time forward by 2 seconds in order to simulate the end of the poll
+        vm.warp(block.timestamp + 2);
 
+        // Now, test voting after the poll has ended
         vm.expectRevert(bytes("Voting has ended"));
         vote_chain_instance.cast_vote(0, "Option A");
     }
