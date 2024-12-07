@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract vote_chain {
+contract votechain {
     struct poll {
         string name;
         string description;
@@ -136,26 +136,3 @@ contract vote_chain {
     }
 }
 
-
-//HOW TO COMPILE AND TEST
-
-/*
-
-1) Install foundry. In Windows, by using "git" terminal, type
-
-curl -L https://foundry.paradigm.xyz | bash
-foundryup
-
-2) Build the file "VoteChain.sol"
-
-forge build
-
-(This command builds all the '.sol' files defined in the "src" folder)
-
-3) Test the functions
-
-forge test
-
-(This command test all the '.t.sol' defined in the "test" folder)
-
-*/

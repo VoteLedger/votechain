@@ -26,12 +26,17 @@ test:
 # Deploy contracts
 deploy:
 	@echo "Deploying VoteChain contract..."
-	forge create src/VoteChain.sol:VoteChain \
+	@forge create src/VoteChain.sol:votechain \
 		--root votechain/ \
 		--broadcast \
 		--optimize true \
 		--private-key ${PRIVATE_KEY} \
 		--rpc-url ${CHAIN_ADDRESS}
+
+# Remove build binaries and artifacts
+clean:
+	@echo "Cleaning up..."
+	@forge clean --root votechain/
 
 # Remove the devcontainer
 devremove:
