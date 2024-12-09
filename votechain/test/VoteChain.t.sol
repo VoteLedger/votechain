@@ -72,6 +72,18 @@ contract vote_chain_test is Test {
         assertEq(is_ended, false, "Poll should not be ended yet");
     }
 
+    // Test correct id update
+    function test_poll_id_autoincrement() public {
+        string[] memory options = new string[](2);
+        options[0] = "Option A";
+        options[1] = "Option B";
+
+        uint id1 = vote_chain_instance.create_poll("Poll 0", "First poll", options, block.timestamp, block.timestamp + 1 days);
+        uint id2 = vote_chain_instance.create_poll("Poll 1", "Second poll", options, block.timestamp, block.timestamp + 1 days);
+
+        assertEq(id1, 0); // Check that the first poll's ID is 0
+        assertEq(id2, 1); // Check that the second poll's ID is 1
+    }
 
     // Test casting a valid vote
     function test_vote() public {
