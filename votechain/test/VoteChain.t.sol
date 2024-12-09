@@ -5,18 +5,18 @@ import "forge-std/Test.sol";
 import "../src/VoteChain.sol";
 
 contract vote_chain_test is Test {
-    votechain public vote_chain_instance;
+    VoteChain public vote_chain_instance;
     address public nonOwner = address(0xBEEF);
 
-    event poll_created(uint indexed poll_id, address indexed owner, string name, string description);
-    event vote_cast(uint indexed poll_id, address voter, string option);
-    event poll_ended(uint indexed poll_id, string reason);
-    event poll_finalized(uint indexed poll_id, string winner);
-    event vote_receipt_sent(address indexed voter, uint indexed poll_id, string receipt);
+    event PollCreated(uint indexed poll_id, address indexed owner, string name, string description);
+    event VoteCast(uint indexed poll_id, address voter, string option);
+    event PollEnded(uint indexed poll_id, string reason);
+    event PollFinalized(uint indexed poll_id, string winner);
+    event VoteReceiptSent(address indexed voter, uint indexed poll_id, string receipt);
 
     // Setup function to deploy the contract before each test
     function setUp() public {
-        vote_chain_instance = new votechain();
+        vote_chain_instance = new VoteChain();
     }
 
     function test_create_poll_anyone_can_create() public {
@@ -32,10 +32,10 @@ contract vote_chain_test is Test {
         vote_chain_instance.create_poll("Non Owner Poll", "Created by non-owner", options, block.timestamp, block.timestamp + 1 days);
 
         // Verify that both polls were successfully created
-        (string memory ownerPollName, , , , , , ) = vote_chain_instance.polls(0);
+        ( , string memory ownerPollName, , , , , , ) = vote_chain_instance.polls(0);
         assertEq(ownerPollName, "Owner Poll", "Poll created by owner should exist");
 
-        (string memory nonOwnerPollName, , , , , , ) = vote_chain_instance.polls(1);
+        ( , string memory nonOwnerPollName, , , , , , ) = vote_chain_instance.polls(1);
         assertEq(nonOwnerPollName, "Non Owner Poll", "Poll created by non-owner should exist");
     }
 
@@ -54,7 +54,7 @@ contract vote_chain_test is Test {
         // 3rd true: Check second indexed argument (owner)
         // 4th true: Check non-indexed arguments (name and description)
         vm.expectEmit(true, true, true, true);
-        emit poll_created(0, address(this), "Test Poll", "A simple poll");
+        emit PollCreated(0, address(this), "Test Poll", "A simple poll");
 
         vote_chain_instance.create_poll(
             "Test Poll",
@@ -65,7 +65,7 @@ contract vote_chain_test is Test {
         );
 
         // Destructure the returned tuple from polls(0)
-        (string memory name, string memory description, , , , bool is_ended, ) = vote_chain_instance.polls(0);
+        ( , string memory name, string memory description, , , , bool is_ended, ) = vote_chain_instance.polls(0);
 
         assertEq(name, "Test Poll", "Poll name mismatch");
         assertEq(description, "A simple poll", "Poll description mismatch");
@@ -108,7 +108,7 @@ contract vote_chain_test is Test {
         );
 
         vm.expectEmit(true, true, true, true);
-        emit vote_receipt_sent(address(this), 0, "Your vote has been successfully cast.");
+        emit VoteReceiptSent(address(this), 0, "Your vote has been successfully cast.");
 
         vote_chain_instance.cast_vote(0, "Option A");
     }
@@ -206,7 +206,7 @@ contract vote_chain_test is Test {
         vm.warp(block.timestamp + 2 days);
 
         vm.expectEmit(true, true, true, true);
-        emit poll_ended(0, "Poll has ended by the owner");
+        emit PollEnded(0, "Poll has ended by the owner");
 
         vote_chain_instance.end_poll(0);
     }

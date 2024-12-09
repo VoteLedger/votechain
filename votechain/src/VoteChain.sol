@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract votechain {
-    struct poll {
+contract VoteChain {
+    struct Poll {
+        uint id; // Unique identifier for the poll
         string name;
         string description;
         string[] options;
@@ -16,23 +17,23 @@ contract votechain {
     }
 
     uint public poll_count;
-    mapping(uint => poll) public polls;
+    mapping(uint => Poll) public polls;
 
     // Used to prevent replay attacks: (voter_address, poll_id, nonce) => bool
     mapping(address => mapping(uint => mapping(uint => bool))) public usedNonces;
 
-    event poll_created(uint indexed poll_id, address indexed owner, string name, string description);
-    event vote_cast(uint indexed poll_id, address voter, string option);
-    event poll_ended(uint indexed poll_id, string reason);
-    event poll_finalized(uint indexed poll_id, string winner);
-    event vote_receipt_sent(address indexed voter, uint indexed poll_id, string receipt);
+    event PollCreated(uint indexed poll_id, address indexed owner, string name, string description);
+    event VoteCast(uint indexed poll_id, address voter, string option);
+    event PollEnded(uint indexed poll_id, string reason);
+    event PollFinalized(uint indexed poll_id, string winner);
+    event VoteReceiptSent(address indexed voter, uint indexed poll_id, string receipt);
 
-    modifier poll_exists(uint poll_id) {
+    modifier pollExists(uint poll_id) {
         require(poll_id < poll_count, "Poll does not exist");
         _;
     }
 
-    modifier only_poll_owner(uint poll_id) {
+    modifier onlyPollOwner(uint poll_id) {
         require(msg.sender == polls[poll_id].owner, "Not the poll owner");
         _;
     }
@@ -44,11 +45,16 @@ contract votechain {
         string[] memory _options,
         uint _start_time,
         uint _end_time
-    ) public {
+    ) 
+        public 
+        returns (uint) // Function now returns the poll ID
+    {
         require(_start_time < _end_time, "Invalid time range");
         require(_options.length > 1, "At least two options required");
 
-        poll storage new_poll = polls[poll_count];
+        uint poll_id = poll_count; // Assign current poll_count as the new poll's ID
+        Poll storage new_poll = polls[poll_id];
+        new_poll.id = poll_id; // Set the poll ID within the struct
         new_poll.name = _name;
         new_poll.description = _description;
         new_poll.options = _options;
@@ -57,24 +63,33 @@ contract votechain {
         new_poll.is_ended = false;
         new_poll.owner = msg.sender; // Set the poll owner
 
-        emit poll_created(poll_count, msg.sender, _name, _description);
+        emit PollCreated(poll_id, msg.sender, _name, _description);
         poll_count++;
+
+        return poll_id; // Return the newly created poll ID to the user
     }
 
     // Only the owner of a poll can close it
-    function end_poll(uint poll_id) public poll_exists(poll_id) only_poll_owner(poll_id) {
-        poll storage poll_instance = polls[poll_id];
+    function end_poll(uint poll_id) 
+        public 
+        pollExists(poll_id) 
+        onlyPollOwner(poll_id) 
+    {
+        Poll storage poll_instance = polls[poll_id];
         require(block.timestamp > poll_instance.end_time, "Poll is still active");
         require(!poll_instance.is_ended, "Poll is already marked as ended");
 
         poll_instance.is_ended = true;
 
-        emit poll_ended(poll_id, "Poll has ended by the owner");
+        emit PollEnded(poll_id, "Poll has ended by the owner");
     }
 
     // Users can cast their vote once for one of the valid options (direct method)
-    function cast_vote(uint poll_id, string memory option) public poll_exists(poll_id) {
-        poll storage poll_instance = polls[poll_id];
+    function cast_vote(uint poll_id, string memory option) 
+        public 
+        pollExists(poll_id) 
+    {
+        Poll storage poll_instance = polls[poll_id];
 
         require(block.timestamp >= poll_instance.start_time, "Voting has not started yet");
         require(block.timestamp <= poll_instance.end_time, "Voting has ended");
@@ -93,14 +108,18 @@ contract votechain {
         poll_instance.votes[option]++;
         poll_instance.has_voted[msg.sender] = true;
 
-        emit vote_cast(poll_id, msg.sender, option);
-        emit vote_receipt_sent(msg.sender, poll_id, "Your vote has been successfully cast.");
+        emit VoteCast(poll_id, msg.sender, option);
+        emit VoteReceiptSent(msg.sender, poll_id, "Your vote has been successfully cast.");
     }
 
 
     // Finalize the poll: calculate the winner and emit the finalization event
-    function finalize_poll(uint poll_id) public poll_exists(poll_id) only_poll_owner(poll_id) {
-        poll storage poll_instance = polls[poll_id];
+    function finalize_poll(uint poll_id) 
+        public 
+        pollExists(poll_id) 
+        onlyPollOwner(poll_id) 
+    {
+        Poll storage poll_instance = polls[poll_id];
         require(poll_instance.is_ended, "Poll must be ended before finalization");
         require(bytes(poll_instance.winner).length == 0, "Poll has already been finalized");
 
@@ -128,23 +147,37 @@ contract votechain {
             poll_instance.winner = winning_option;
         }
 
-        emit poll_finalized(poll_id, poll_instance.winner);
+        emit PollFinalized(poll_id, poll_instance.winner);
     }
 
     // View the winner (if finalized)
-    function get_winner(uint poll_id) public view poll_exists(poll_id) returns (string memory) {
-        poll storage poll_instance = polls[poll_id];
+    function get_winner(uint poll_id) 
+        public 
+        view 
+        pollExists(poll_id) 
+        returns (string memory) 
+    {
+        Poll storage poll_instance = polls[poll_id];
         require(bytes(poll_instance.winner).length != 0, "Poll has not been finalized yet");
         return poll_instance.winner;
     }
 
     // View function to get votes for a particular option
-    function get_votes(uint poll_id, string memory option) public view poll_exists(poll_id) returns (uint) {
+    function get_votes(uint poll_id, string memory option) 
+        public 
+        view 
+        pollExists(poll_id) 
+        returns (uint) 
+    {
         return polls[poll_id].votes[option];
     }
 
     // Utility functions
-    function uintToStr(uint _i) internal pure returns (string memory) {
+    function uintToStr(uint _i) 
+        internal 
+        pure 
+        returns (string memory) 
+    {
         if (_i == 0) {
             return "0";
         }

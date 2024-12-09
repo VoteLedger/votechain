@@ -26,7 +26,7 @@ test:
 # Deploy contracts
 deploy:
 	@echo "Deploying VoteChain contract..."
-	@forge create src/VoteChain.sol:votechain \
+	@forge create src/VoteChain.sol:VoteChain \
 		--root votechain/ \
 		--broadcast \
 		--optimize true \
