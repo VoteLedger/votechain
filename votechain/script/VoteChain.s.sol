@@ -27,18 +27,23 @@ contract deploy_vote_chain is Script {
         console.log("End time:", end_time);
 
         // Pass the options array to create_poll
-        vote_chain_instance.create_poll("Test Poll", "A test poll for winner calculation", options, start_time, end_time);
-        console.log("Poll created with ID:", uint256(0));
+        uint poll_id = vote_chain_instance.create_poll("Test Poll", "A test poll for winner calculation", options, start_time, end_time);
+        console.log("Poll created with ID:", poll_id);
 
         // 3. Vote simulations
         console.log("Current block.timestamp:", block.timestamp);
         address user_address = msg.sender;
-        vote_chain_instance.cast_vote(0, "Option A"); // First, OK
-        console.log("%s has successfully voted for Poll ID %s", user_address, uint256(0));
 
-        try vote_chain_instance.cast_vote(0, "Option B") {
-            // The same user tries to vote a second time
-            console.log("%s has successfully voted for Poll ID %s", user_address, uint256(0));
+        // Voting using index instead of option string
+        try vote_chain_instance.cast_vote(poll_id, 0) {  // Index 0 corresponds to "Option A"
+            console.log("%s has successfully voted for Poll ID %s", user_address, poll_id);
+        } catch Error(string memory reason) {
+            console.log(reason); // Expected error if the user tries to vote twice
+        }
+
+        // Try to vote again for "Option B" using index
+        try vote_chain_instance.cast_vote(poll_id, 1) {  // Index 1 corresponds to "Option B"
+            console.log("%s has successfully voted for Poll ID %s", user_address, poll_id);
         } catch Error(string memory reason) {
             console.log(reason); // "You have already voted"
         }
@@ -48,20 +53,21 @@ contract deploy_vote_chain is Script {
         console.log("Current block.timestamp:", block.timestamp);
 
         // Check if the poll's end time has passed and update `is_ended`
-        vote_chain_instance.end_poll(0);
+        vote_chain_instance.end_poll(poll_id);
         console.log("Poll marked as ended at time:", block.timestamp);
 
         // Finalize the poll (calculate winner)
-        try vote_chain_instance.finalize_poll(0) {
+        try vote_chain_instance.finalize_poll(poll_id) {
             console.log("Poll finalized and winner determined at time:", block.timestamp);
         } catch {
             console.log("Poll is still not ready for finalization.");
         }
 
         // 5. Print winner
-        string memory winner = vote_chain_instance.get_winner(uint256(0));
-        console.log("The winner of Poll ID 0 is:", winner);
+        string memory winner = vote_chain_instance.get_winner(poll_id);
+        console.log("The winner of Poll ID %s is:", poll_id, winner);
 
         vm.stopBroadcast();
     }
 }
+

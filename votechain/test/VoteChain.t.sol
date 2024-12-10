@@ -128,9 +128,9 @@ contract vote_chain_test is Test {
             block.timestamp + 1 days
         );
 
-        vote_chain_instance.cast_vote(0, "Option A");
+        vote_chain_instance.cast_vote(0, 0);
 
-        uint256 votes = vote_chain_instance.get_votes(0, "Option A");
+        uint256 votes = vote_chain_instance.get_votes(0, 0);
         assertEq(votes, 1, "Option A should have 1 vote");
     }
 
@@ -151,7 +151,7 @@ contract vote_chain_test is Test {
         vm.expectEmit(true, true, true, true);
         emit VoteReceiptSent(address(this), 0, "Your vote has been successfully cast.");
 
-        vote_chain_instance.cast_vote(0, "Option A");
+        vote_chain_instance.cast_vote(0, 0);
     }
 
     // Test that voting before start time is not allowed
@@ -169,7 +169,7 @@ contract vote_chain_test is Test {
         );
 
         vm.expectRevert(bytes("Voting has not started yet"));
-        vote_chain_instance.cast_vote(0, "Option A");
+        vote_chain_instance.cast_vote(0, 0);
     }
 
     // Test voting after end time
@@ -189,7 +189,7 @@ contract vote_chain_test is Test {
         vm.warp(block.timestamp + 2);
 
         vm.expectRevert(bytes("Voting has ended"));
-        vote_chain_instance.cast_vote(0, "Option A");
+        vote_chain_instance.cast_vote(0, 0);
     }
 
     // Test double voting is not allowed
@@ -206,29 +206,29 @@ contract vote_chain_test is Test {
             block.timestamp + 1 days
         );
 
-        vote_chain_instance.cast_vote(0, "Option A");
+        vote_chain_instance.cast_vote(0, 0);
 
         vm.expectRevert(bytes("You have already voted"));
-        vote_chain_instance.cast_vote(0, "Option B");
+        vote_chain_instance.cast_vote(0, 1);
     }
 
     // Test invalid option
     function test_invalid_option() public {
-        string[] memory options = new string[](2);
-        options[0] = "Option A";
-        options[1] = "Option B";
+    string[] memory options = new string[](2);
+    options[0] = "Option A";
+    options[1] = "Option B";
 
-        vote_chain_instance.create_poll(
-            "Invalid Option Test",
-            "Testing invalid option votes",
-            options,
-            block.timestamp,
-            block.timestamp + 1 days
-        );
+    vote_chain_instance.create_poll(
+        "Invalid Option Test",
+        "Testing invalid option votes",
+        options,
+        block.timestamp,
+        block.timestamp + 1 days
+    );
 
-        vm.expectRevert(bytes("Invalid option: The option you selected does not exist"));
-        vote_chain_instance.cast_vote(0, "Option C");
-    }
+    vm.expectRevert(bytes("Invalid option: The option you selected does not exist"));
+    vote_chain_instance.cast_vote(0, 2);
+}
 
     // Test ending poll after expiration
     function test_end_poll_after_time() public {
@@ -266,10 +266,10 @@ contract vote_chain_test is Test {
             block.timestamp + 1 days
         );
 
-        vote_chain_instance.cast_vote(0, "Option A");
+        vote_chain_instance.cast_vote(0, 0);
 
         vm.prank(nonOwner);
-        vote_chain_instance.cast_vote(0, "Option B");
+        vote_chain_instance.cast_vote(0, 1);
 
         vm.warp(block.timestamp + 2 days);
         vote_chain_instance.end_poll(0);

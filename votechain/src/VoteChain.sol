@@ -98,33 +98,25 @@ contract VoteChain {
     }
 
     // Users can cast their vote once for one of the valid options (direct method)
-    function cast_vote(uint poll_id, string memory option) 
-        public 
-        pollExists(poll_id) 
+    function cast_vote(uint poll_id, uint option_index)
+    public
+    pollExists(poll_id)
     {
         Poll storage poll_instance = polls[poll_id];
 
         require(block.timestamp >= poll_instance.start_time, "Voting has not started yet");
         require(block.timestamp <= poll_instance.end_time, "Voting has ended");
         require(!poll_instance.has_voted[msg.sender], "You have already voted");
+        require(option_index < poll_instance.options.length, "Invalid option index");
 
-        bool valid_option = false;
-        for (uint i = 0; i < poll_instance.options.length; i++) {
-            if (keccak256(abi.encodePacked(option)) == keccak256(abi.encodePacked(poll_instance.options[i]))) {
-                valid_option = true;
-                break;
-            }
-        }
-
-        require(valid_option, "Invalid option: The option you selected does not exist");
-
+        // Increment the vote count for the selected option
+        string memory option = poll_instance.options[option_index];
         poll_instance.votes[option]++;
         poll_instance.has_voted[msg.sender] = true;
 
         emit VoteCast(poll_id, msg.sender, option);
         emit VoteReceiptSent(msg.sender, poll_id, "Your vote has been successfully cast.");
     }
-
 
     // Finalize the poll: calculate the winner and emit the finalization event
     function finalize_poll(uint poll_id) 
@@ -176,13 +168,17 @@ contract VoteChain {
     }
 
     // View function to get votes for a particular option
-    function get_votes(uint poll_id, string memory option) 
-        public 
-        view 
-        pollExists(poll_id) 
-        returns (uint) 
+    function get_votes(uint poll_id, uint option_index)
+    public
+    view
+    pollExists(poll_id)
+    returns (uint)
     {
-        return polls[poll_id].votes[option];
+        Poll storage poll_instance = polls[poll_id];
+        require(option_index < poll_instance.options.length, "Invalid option index");
+
+        string memory option = poll_instance.options[option_index];
+        return poll_instance.votes[option];
     }
 
     // Utility functions
