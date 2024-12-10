@@ -7,6 +7,7 @@ contract VoteChain {
         string name;
         string description;
         string[] options;
+        uint created_at;
         uint start_time;
         uint end_time;
         mapping(string => uint) votes;
@@ -58,6 +59,7 @@ contract VoteChain {
         new_poll.name = _name;
         new_poll.description = _description;
         new_poll.options = _options;
+        new_poll.created_at = block.timestamp; // Set the current timestamp
         new_poll.start_time = _start_time;
         new_poll.end_time = _end_time;
         new_poll.is_ended = false;
@@ -67,6 +69,17 @@ contract VoteChain {
         poll_count++;
 
         return poll_id; // Return the newly created poll ID to the user
+    }
+
+    // Return the pool options
+    function poll_options(uint poll_id)
+    public
+    view
+    pollExists(poll_id)
+    returns (string[] memory _options)
+    {
+        Poll storage poll_instance = polls[poll_id];
+        return poll_instance.options;
     }
 
     // Only the owner of a poll can close it

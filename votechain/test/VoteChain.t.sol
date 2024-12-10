@@ -32,10 +32,10 @@ contract vote_chain_test is Test {
         vote_chain_instance.create_poll("Non Owner Poll", "Created by non-owner", options, block.timestamp, block.timestamp + 1 days);
 
         // Verify that both polls were successfully created
-        ( , string memory ownerPollName, , , , , , ) = vote_chain_instance.polls(0);
+        ( , string memory ownerPollName, , , , , , , ) = vote_chain_instance.polls(0);
         assertEq(ownerPollName, "Owner Poll", "Poll created by owner should exist");
 
-        ( , string memory nonOwnerPollName, , , , , , ) = vote_chain_instance.polls(1);
+        ( , string memory nonOwnerPollName, , , , , , , ) = vote_chain_instance.polls(1);
         assertEq(nonOwnerPollName, "Non Owner Poll", "Poll created by non-owner should exist");
     }
 
@@ -56,6 +56,8 @@ contract vote_chain_test is Test {
         vm.expectEmit(true, true, true, true);
         emit PollCreated(0, address(this), "Test Poll", "A simple poll");
 
+        uint current_timestamp = block.timestamp;
+
         vote_chain_instance.create_poll(
             "Test Poll",
             "A simple poll",
@@ -65,11 +67,17 @@ contract vote_chain_test is Test {
         );
 
         // Destructure the returned tuple from polls(0)
-        ( , string memory name, string memory description, , , , bool is_ended, ) = vote_chain_instance.polls(0);
+        ( , string memory name, string memory description, , uint256 created_at, , , bool is_ended, ) = vote_chain_instance.polls(0);
 
         assertEq(name, "Test Poll", "Poll name mismatch");
         assertEq(description, "A simple poll", "Poll description mismatch");
+        assertEq(created_at, current_timestamp, "Created_at timestamp mismatch");
         assertEq(is_ended, false, "Poll should not be ended yet");
+
+        // Check the poll options
+        assertEq(options.length, 2, "Poll should have 2 options");
+        assertEq(options[0], "Option A", "Option A mismatch");
+        assertEq(options[1], "Option B", "Option B mismatch");
     }
 
     // Test correct id update
@@ -83,6 +91,27 @@ contract vote_chain_test is Test {
 
         assertEq(id1, 0); // Check that the first poll's ID is 0
         assertEq(id2, 1); // Check that the second poll's ID is 1
+    }
+
+    function test_poll_options() public {
+        string memory name = "Test Poll";
+        string memory description = "This is a test poll";
+        string[] memory options = new string[](3);
+        options[0] = "Option A";
+        options[1] = "Option B";
+        options[2] = "Option C";
+        uint startTime = block.timestamp + 1;
+        uint endTime = block.timestamp + 3600;
+
+        uint pollId = vote_chain_instance.create_poll(name, description,
+            options, startTime, endTime);
+
+        string[] memory poll_options = vote_chain_instance.poll_options(pollId);
+
+        assertEq(poll_options.length, options.length, "Options count mismatch");
+        for (uint i = 0; i < options.length; i++) {
+            assertEq(poll_options[i], options[i], "Option mismatch");
+        }
     }
 
     // Test casting a valid vote
