@@ -80,11 +80,9 @@ contract VoteChain {
     {
         Poll storage poll_instance = polls[poll_id];
 
-        uint num_options = poll_instance.options.length;
+        uint[] memory num_votes = new uint[](poll_instance.options.length);
 
-        uint[] memory num_votes = new uint[](num_options);
-
-        for (uint i = 0; i < num_options; i++) {
+        for (uint i = 0; i < poll_instance.options.length; i++) {
             string memory option = poll_instance.options[i];
             num_votes[i] = poll_instance.votes[option];
         }
