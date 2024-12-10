@@ -118,6 +118,17 @@ contract VoteChain {
         emit VoteReceiptSent(msg.sender, poll_id, "Your vote has been successfully cast.");
     }
 
+    // Check whether a user has already voted
+    function has_voted(uint poll_id, address voter)
+    public
+    view
+    pollExists(poll_id)
+    returns (bool)
+    {
+        Poll storage poll_instance = polls[poll_id];
+        return poll_instance.has_voted[voter];
+    }
+
     // Finalize the poll: calculate the winner and emit the finalization event
     function finalize_poll(uint poll_id) 
         public 
