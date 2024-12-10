@@ -119,6 +119,33 @@ contract vote_chain_test is Test {
         }
     }
 
+    //Test poll_options with 0 votes
+    function test_poll_options_with_zero_votes() public {
+        string[] memory options = new string[](2);
+        options[0] = "Option A";
+        options[1] = "Option B";
+
+        vote_chain_instance.create_poll(
+            "Zero Votes Test",
+            "Testing zero votes",
+            options,
+            block.timestamp,
+            block.timestamp + 1 days
+        );
+
+        (string[] memory poll_options, uint[] memory poll_votes) = vote_chain_instance.poll_options(0);
+
+        assertEq(poll_options.length, options.length, "Options count mismatch");
+
+        for (uint i = 0; i < options.length; i++) {
+            assertEq(poll_options[i], options[i], "Option mismatch");
+        }
+
+        for (uint i = 0; i < poll_votes.length; i++) {
+            assertEq(poll_votes[i], 0, "Initial vote count mismatch");
+        }
+    }
+
     // Test casting a valid vote
     function test_vote() public {
         string[] memory options = new string[](2);

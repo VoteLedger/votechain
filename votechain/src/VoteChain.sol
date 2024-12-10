@@ -82,14 +82,18 @@ contract VoteChain {
 
         uint num_options = poll_instance.options.length;
 
-        uint[] memory numvotes = new uint[](num_options);
+        uint[] memory num_votes = new uint[](num_options);
 
         for (uint i = 0; i < num_options; i++) {
             string memory option = poll_instance.options[i];
-            numvotes[i] = poll_instance.votes[option];
+            num_votes[i] = poll_instance.votes[option];
         }
 
-        return (poll_instance.options, numvotes);
+        if (num_votes.length == 0) {
+            return (poll_instance.options, new uint[](0));
+        } else {
+            return (poll_instance.options, num_votes);
+        }
     }
 
     // Only the owner of a poll can close it
