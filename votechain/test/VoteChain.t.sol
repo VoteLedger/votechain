@@ -164,6 +164,10 @@ contract vote_chain_test is Test {
 
         uint256 votes = vote_chain_instance.get_votes(0, 0);
         assertEq(votes, 1, "Option A should have 1 vote");
+
+        // Ensure that system knows that we have already voted
+        bool hasVoted = vote_chain_instance.has_voted(0);
+        assertEq(hasVoted, true, "has_voted should return true as we have already voted!");
     }
 
     function test_poll_numvotes_length_and_values() public {
