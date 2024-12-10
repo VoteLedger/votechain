@@ -106,11 +106,16 @@ contract vote_chain_test is Test {
         uint pollId = vote_chain_instance.create_poll(name, description,
             options, startTime, endTime);
 
-        string[] memory poll_options = vote_chain_instance.poll_options(pollId);
+        (string[] memory poll_options, uint[] memory poll_votes) = vote_chain_instance.poll_options(pollId);
 
         assertEq(poll_options.length, options.length, "Options count mismatch");
+
         for (uint i = 0; i < options.length; i++) {
             assertEq(poll_options[i], options[i], "Option mismatch");
+        }
+
+        for (uint i = 0; i < poll_votes.length; i++) {
+            assertEq(poll_votes[i], 0, "Initial vote count mismatch");
         }
     }
 

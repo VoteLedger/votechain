@@ -76,10 +76,20 @@ contract VoteChain {
     public
     view
     pollExists(poll_id)
-    returns (string[] memory _options)
+    returns (string[] memory _options, uint[] memory _numvotes)
     {
         Poll storage poll_instance = polls[poll_id];
-        return poll_instance.options;
+
+        uint num_options = poll_instance.options.length;
+
+        uint[] memory numvotes = new uint[](num_options);
+
+        for (uint i = 0; i < num_options; i++) {
+            string memory option = poll_instance.options[i];
+            numvotes[i] = poll_instance.votes[option];
+        }
+
+        return (poll_instance.options, numvotes);
     }
 
     // Only the owner of a poll can close it
