@@ -166,6 +166,27 @@ contract vote_chain_test is Test {
         assertEq(votes, 1, "Option A should have 1 vote");
     }
 
+    function test_poll_numvotes_length_and_values() public {
+        string memory name = "Test Poll";
+        string memory description = "This is a test poll";
+        string[] memory options = new string[](3);
+        options[0] = "Option A";
+        options[1] = "Option B";
+        options[2] = "Option C";
+        uint startTime = block.timestamp + 1;
+        uint endTime = block.timestamp + 3600;
+
+        uint pollId = vote_chain_instance.create_poll(name, description, options, startTime, endTime);
+
+        (string[] memory poll_options, uint[] memory poll_votes) = vote_chain_instance.poll_options(pollId);
+
+        assertEq(poll_votes.length, poll_options.length, "Mismatch between options and numvotes length");
+
+        for (uint i = 0; i < poll_votes.length; i++) {
+            assertEq(poll_votes[i], 0, "Initial vote count should be 0");
+        }
+    }
+
     // Test vote receipt event
     function test_vote_receipt_sent() public {
         string[] memory options = new string[](2);
