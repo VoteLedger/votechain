@@ -226,7 +226,7 @@ contract vote_chain_test is Test {
         block.timestamp + 1 days
     );
 
-    vm.expectRevert(bytes("Invalid option: The option you selected does not exist"));
+    vm.expectRevert(bytes("Invalid option index"));
     vote_chain_instance.cast_vote(0, 2);
 }
 
