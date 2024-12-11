@@ -101,12 +101,39 @@ contract VoteChain {
         onlyPollOwner(poll_id) 
     {
         Poll storage poll_instance = polls[poll_id];
-        require(block.timestamp > poll_instance.end_time, "Poll is still active");
         require(!poll_instance.is_ended, "Poll is already marked as ended");
+        require(block.timestamp > poll_instance.end_time, "Poll is still active");
+        require(bytes(poll_instance.winner).length == 0, "Poll has already been finalized");
 
         poll_instance.is_ended = true;
 
         emit PollEnded(poll_id, "Poll has ended by the owner");
+
+        uint max_votes = 0;
+        bool tie = false;
+        string memory winning_option;
+
+        for (uint i = 0; i < poll_instance.options.length; i++) {
+            string memory opt = poll_instance.options[i];
+            uint option_votes = poll_instance.votes[opt];
+
+            if (option_votes > max_votes) {
+                max_votes = option_votes;
+                winning_option = opt;
+                tie = false;
+            } else if (option_votes == max_votes && max_votes != 0) {
+                tie = true;
+            }
+        }
+
+        // If no votes or tie, set winner to "TIE"
+        if (max_votes == 0 || tie) {
+            poll_instance.winner = "TIE";
+        } else {
+            poll_instance.winner = winning_option;
+        }
+
+        emit PollFinalized(poll_id, poll_instance.winner);
     }
 
     // Users can cast their vote once for one of the valid options (direct method)
@@ -139,43 +166,6 @@ contract VoteChain {
     {
         Poll storage poll_instance = polls[poll_id];
         return poll_instance.has_voted[msg.sender];
-    }
-
-    // Finalize the poll: calculate the winner and emit the finalization event
-    function finalize_poll(uint poll_id) 
-        public 
-        pollExists(poll_id) 
-        onlyPollOwner(poll_id) 
-    {
-        Poll storage poll_instance = polls[poll_id];
-        require(poll_instance.is_ended, "Poll must be ended before finalization");
-        require(bytes(poll_instance.winner).length == 0, "Poll has already been finalized");
-
-        uint max_votes = 0;
-        bool tie = false;
-        string memory winning_option;
-
-        for (uint i = 0; i < poll_instance.options.length; i++) {
-            string memory opt = poll_instance.options[i];
-            uint option_votes = poll_instance.votes[opt];
-
-            if (option_votes > max_votes) {
-                max_votes = option_votes;
-                winning_option = opt;
-                tie = false;
-            } else if (option_votes == max_votes && max_votes != 0) {
-                tie = true;
-            }
-        }
-
-        // If no votes or tie, set winner to "TIE"
-        if (max_votes == 0 || tie) {
-            poll_instance.winner = "TIE";
-        } else {
-            poll_instance.winner = winning_option;
-        }
-
-        emit PollFinalized(poll_id, poll_instance.winner);
     }
 
     // View the winner (if finalized)

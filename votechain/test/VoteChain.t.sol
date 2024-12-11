@@ -330,7 +330,6 @@ contract vote_chain_test is Test {
 
         vm.warp(block.timestamp + 2 days);
         vote_chain_instance.end_poll(0);
-        vote_chain_instance.finalize_poll(0);
 
         string memory winner = vote_chain_instance.get_winner(0);
         assertEq(winner, "TIE", "Tie scenario failed");

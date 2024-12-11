@@ -52,13 +52,9 @@ contract deploy_vote_chain is Script {
         vm.warp(block.timestamp + 11 minutes); // Move forward in time just a little after the poll ends
         console.log("Current block.timestamp:", block.timestamp);
 
-        // Check if the poll's end time has passed and update `is_ended`
-        vote_chain_instance.end_poll(poll_id);
-        console.log("Poll marked as ended at time:", block.timestamp);
-
         // Finalize the poll (calculate winner)
-        try vote_chain_instance.finalize_poll(poll_id) {
-            console.log("Poll finalized and winner determined at time:", block.timestamp);
+        try vote_chain_instance.end_poll(poll_id) {
+            console.log("Poll closed and winner determined at time:", block.timestamp);
         } catch {
             console.log("Poll is still not ready for finalization.");
         }
